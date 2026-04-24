@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoRoute — Green Navigation</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --eco-green: #00c853;
+    --eco-light: #69f0ae;
+    --eco-dark: #00701a;
+    --warn-red: #ff3d3d;
+    --warn-orange: #ff9100;
+    --bg-dark: #0a0f0a;
+    --bg-panel: #0f1a0f;
+    --bg-card: #162316;
+    --bg-card2: #1a2e1a;
+    --border: rgba(0,200,83,0.15);
+    --text-primary: #e8f5e9;
+    --text-secondary: #81c784;
+    --text-muted: #4a6e4a;
+    --glass: rgba(15,26,15,0.92);
+    --shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; width: 100%; height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ===== LOGIN SCREEN ===== */
+  #loginScreen {
+    background: radial-gradient(ellipse at 20% 50%, #0a2a0a 0%, #050a05 60%);
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #loginScreen::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,200,83,0.08) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    animation: pulse 6s ease-in-out infinite;
+  }
+  #loginScreen::after {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(0,200,83,0.05) 0%, transparent 70%);
+    bottom: -50px; left: -50px;
+    animation: pulse 8s ease-in-out infinite reverse;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.2);opacity:0.6} }
+
+  .login-container {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 48px;
+    width: 440px;
+    max-width: 95vw;
+    backdrop-filter: blur(20px);
+    box-shadow: var(--shadow), 0 0 60px rgba(0,200,83,0.06);
+    z-index: 1;
+    animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  .logo {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 32px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-dark));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px; font-weight: 800;
+    color: var(--text-primary);
+  }
+  .logo-text span { color: var(--eco-green); }
+
+  .tabs {
+    display: flex;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+  .tab-btn {
+    flex: 1; padding: 10px;
+    background: none; border: none;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: var(--bg-card2);
+    color: var(--eco-green);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .form-input, .form-select {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--eco-green); }
+  .form-select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2300c853' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-dark));
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,200,83,0.3); }
+
+  .divider {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+    margin: 18px 0;
+    position: relative;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    position: absolute;
+    top: 50%; width: calc(50% - 24px);
+    height: 1px;
+    background: var(--border);
+  }
+  .divider::before { left: 0; }
+  .divider::after { right: 0; }
+
+  .vehicle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .vehicle-card {
+    background: var(--bg-dark);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .vehicle-card:hover { border-color: var(--eco-green); }
+  .vehicle-card.selected { border-color: var(--eco-green); background: rgba(0,200,83,0.08); }
+  .vehicle-card .icon { font-size: 24px; margin-bottom: 6px; }
+  .vehicle-card .label { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
+
+  /* ===== MAP SCREEN ===== */
+  #mapScreen {
+    position: relative;
+    flex-direction: column;
+  }
+
+  #map {
+    width: 100%; height: 100%;
+    position: absolute; top: 0; left: 0;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: absolute;
+    top: 0; left: 0;
+    width: 380px;
+    height: 100%;
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 4px 0 30px rgba(0,0,0,0.5);
+  }
+
+  .sidebar-header {
+    padding: 20px 20px 0;
+    flex-shrink: 0;
+  }
+
+  .top-bar {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .logo-sm {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Syne', sans-serif;
+    font-size: 18px; font-weight: 800;
+    color: var(--text-primary);
+  }
+  .logo-sm span { color: var(--eco-green); }
+  .logo-sm .dot { color: var(--eco-green); font-size: 10px; }
+
+  .user-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px 6px 6px;
+    cursor: pointer;
+  }
+  .user-avatar {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-dark));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #fff;
+    font-family: 'Syne', sans-serif;
+  }
+  .user-name { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+
+  .search-box {
+    position: relative;
+    margin-bottom: 14px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--eco-green);
+    font-size: 16px;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 13px 16px 13px 42px;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: var(--eco-green); }
+  .search-input::placeholder { color: var(--text-muted); }
+
+  .loc-btn {
+    position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,200,83,0.15);
+    border: none; border-radius: 8px;
+    padding: 6px 10px;
+    color: var(--eco-green);
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+  .loc-btn:hover { background: rgba(0,200,83,0.25); }
+
+  .origin-box {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+  }
+  .origin-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--eco-green);
+    box-shadow: 0 0 8px var(--eco-green);
+    flex-shrink: 0;
+  }
+  .origin-text { color: var(--text-secondary); }
+
+  .vehicle-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .vehicle-badge span { color: var(--eco-green); font-weight: 600; }
+
+  .eco-score-bar {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eco-ring {
+    width: 48px; height: 48px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .eco-ring svg { transform: rotate(-90deg); }
+  .eco-ring-value {
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 800;
+    color: var(--eco-green);
+  }
+  .eco-stats { flex: 1; }
+  .eco-stats-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+  .eco-stats-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; color: var(--text-primary); }
+  .eco-stats-sub { font-size: 11px; color: var(--text-secondary); }
+
+  /* Routes */
+  .routes-header {
+    padding: 0 20px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .routes-count {
+    background: rgba(0,200,83,0.15);
+    color: var(--eco-green);
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 11px;
+  }
+
+  .routes-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 20px;
+  }
+  .routes-list::-webkit-scrollbar { width: 4px; }
+  .routes-list::-webkit-scrollbar-track { background: transparent; }
+  .routes-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .route-card {
+    background: var(--bg-card);
+    border: 1.5px solid transparent;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .route-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    border-radius: 2px 0 0 2px;
+  }
+  .route-card.green::before { background: var(--eco-green); }
+  .route-card.orange::before { background: var(--warn-orange); }
+  .route-card.red::before { background: var(--warn-red); }
+  .route-card:hover { border-color: rgba(0,200,83,0.3); transform: translateX(2px); }
+  .route-card.active { border-color: var(--eco-green); background: var(--bg-card2); }
+
+  .route-card-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .route-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .eco-badge {
+    display: flex; align-items: center; gap: 5px;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px; font-weight: 700;
+    font-family: 'Syne', sans-serif;
+  }
+  .eco-badge.green { background: rgba(0,200,83,0.15); color: var(--eco-green); }
+  .eco-badge.orange { background: rgba(255,145,0,0.15); color: var(--warn-orange); }
+  .eco-badge.red { background: rgba(255,61,61,0.15); color: var(--warn-red); }
+
+  .route-meta {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; margin-bottom: 10px;
+  }
+  .meta-item { text-align: center; }
+  .meta-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--text-primary);
+  }
+  .meta-label {
+    font-size: 10px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  .co2-bar-wrap { margin-bottom: 10px; }
+  .co2-bar-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text-muted);
+    margin-bottom: 5px;
+  }
+  .co2-bar-track {
+    height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .co2-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s cubic-bezier(0.16,1,0.3,1);
+  }
+  .co2-bar-fill.green { background: linear-gradient(90deg, var(--eco-green), var(--eco-light)); }
+  .co2-bar-fill.orange { background: linear-gradient(90deg, var(--warn-orange), #ffcc02); }
+  .co2-bar-fill.red { background: linear-gradient(90deg, var(--warn-red), #ff7043); }
+
+  .route-impact {
+    font-size: 12px; color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 10px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    display: none;
+  }
+  .route-card.active .route-impact { display: block; }
+
+  .route-impact .impact-icon { font-size: 16px; margin-right: 6px; }
+
+  .nav-btn {
+    width: 100%;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(135deg, var(--eco-green), var(--eco-dark));
+    border: none; border-radius: 10px;
+    padding: 11px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .nav-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,200,83,0.3); }
+
+  /* Loading routes */
+  .loading-routes {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    gap: 16px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  .loader-ring {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(0,200,83,0.15);
+    border-top-color: var(--eco-green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Map top-right controls */
+  .map-controls {
+    position: absolute;
+    top: 20px; right: 20px;
+    z-index: 50;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .map-btn {
+    width: 44px; height: 44px;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+    color: var(--text-primary);
+  }
+  .map-btn:hover { background: var(--bg-card2); border-color: var(--eco-green); }
+
+  /* Legend */
+  .legend {
+    position: absolute;
+    bottom: 24px; right: 20px;
+    z-index: 50;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 12px;
+  }
+  .legend-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px; font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+    color: var(--text-secondary);
+  }
+  .legend-line {
+    width: 24px; height: 4px;
+    border-radius: 2px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-card2);
+    border: 1px solid var(--eco-green);
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 13px; color: var(--text-primary);
+    z-index: 999;
+    transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    white-space: nowrap;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Eco tip bar */
+  .eco-tip {
+    position: absolute;
+    bottom: 24px; left: 400px; right: 240px;
+    z-index: 50;
+    background: rgba(0,200,83,0.1);
+    border: 1px solid rgba(0,200,83,0.25);
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex; align-items: center; gap: 10px;
+    backdrop-filter: blur(10px);
+  }
+
+  /* No routes state */
+  .empty-state {
+    display: flex; flex-direction: column;
+    align-items: center; padding: 40px 20px;
+    color: var(--text-muted); text-align: center;
+    gap: 12px;
+  }
+  .empty-icon { font-size: 40px; }
+  .empty-text { font-size: 13px; line-height: 1.6; }
+
+  /* Mobile adjustments */
+  @media (max-width: 600px) {
+    .sidebar { width: 100%; height: auto; top: auto; bottom: 0; border-right: none; border-top: 1px solid var(--border); max-height: 60vh; border-radius: 20px 20px 0 0; }
+    .eco-tip { display: none; }
+    .legend { bottom: calc(60vh + 10px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen" class="screen active">
+  <div class="login-container">
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <div class="logo-text">Eco<span>Route</span></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchTab('register')">Register</button>
+    </div>
+
+    <!-- Login Tab -->
+    <div id="loginTab" class="tab-content active">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" placeholder="you@example.com" id="loginEmail">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" placeholder="••••••••" id="loginPassword">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+      <div class="divider">or continue as guest</div>
+      <button class="btn-primary" style="background: var(--bg-card2); border: 1px solid var(--border);" onclick="doLogin()">Continue as Guest</button>
+    </div>
+
+    <!-- Register Tab -->
+    <div id="registerTab" class="tab-content">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name</label>
+          <input class="form-input" type="text" placeholder="Alex" id="regFirst">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name</label>
+          <input class="form-input" type="text" placeholder="Green" id="regLast">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" placeholder="you@example.com" id="regEmail">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" placeholder="Create password" id="regPass">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Fuel Type</label>
+        <select class="form-select" id="fuelType">
+          <option value="petrol">Petrol / Gasoline</option>
+          <option value="diesel">Diesel</option>
+          <option value="electric">Electric (EV)</option>
+          <option value="hybrid">Hybrid</option>
+          <option value="cng">CNG / LPG</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Vehicle Type</label>
+        <div class="vehicle-grid">
+          <div class="vehicle-card" id="v2w" onclick="selectVehicle('2wheeler')">
+            <div class="icon">🏍️</div>
+            <div class="label">2-Wheeler</div>
+          </div>
+          <div class="vehicle-card" id="v4w" onclick="selectVehicle('4wheeler')">
+            <div class="icon">🚗</div>
+            <div class="label">Car / 4-Wheeler</div>
+          </div>
+          <div class="vehicle-card" id="vev" onclick="selectVehicle('ev')">
+            <div class="icon">⚡</div>
+            <div class="label">Electric Vehicle</div>
+          </div>
+          <div class="vehicle-card" id="vbus" onclick="selectVehicle('bus')">
+            <div class="icon">🚌</div>
+            <div class="label">Bus / Van</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="doRegister()">Create Account & Start →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAP SCREEN ===== -->
+<div id="mapScreen" class="screen">
+  <div id="map"></div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="top-bar">
+        <div class="logo-sm">🌿 Eco<span>Route</span></div>
+        <div class="user-pill" id="userPill">
+          <div class="user-avatar" id="userAvatar">A</div>
+          <div class="user-name" id="userName">User</div>
+        </div>
+      </div>
+
+      <!-- Origin display -->
+      <div class="origin-box">
+        <div class="origin-dot"></div>
+        <div class="origin-text" id="originText">Detecting your location...</div>
+      </div>
+
+      <!-- Destination search -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="destinationInput" type="text" placeholder="Where to?">
+        <button class="loc-btn" onclick="searchDestination()">Go</button>
+      </div>
+
+      <!-- Vehicle badge -->
+      <div class="vehicle-badge" id="vehicleBadge">
+        <span>🚗</span> <span id="vehicleInfo">Petrol Car</span> &nbsp;·&nbsp; Eco scoring: <span>Active</span>
+      </div>
+
+      <!-- Live eco score -->
+      <div class="eco-score-bar" id="ecoScoreBar" style="display:none">
+        <div class="eco-ring">
+          <svg width="48" height="48" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="18" fill="none" stroke="rgba(0,200,83,0.15)" stroke-width="5"/>
+            <circle cx="24" cy="24" r="18" fill="none" stroke="#00c853" stroke-width="5"
+              stroke-dasharray="113" id="ecoArcFill" stroke-dashoffset="40" stroke-linecap="round"/>
+          </svg>
+          <div class="eco-ring-value" id="ecoRingVal">A</div>
+        </div>
+        <div class="eco-stats">
+          <div class="eco-stats-title">Best Route CO₂</div>
+          <div class="eco-stats-val" id="bestCo2">—</div>
+          <div class="eco-stats-sub" id="bestImpact">Select destination to compare routes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Routes -->
+    <div class="routes-header" id="routesHeader" style="display:none">
+      Routes <span class="routes-count" id="routesCountBadge">0 found</span>
+    </div>
+    <div class="loading-routes" id="loadingRoutes">
+      <div class="loader-ring"></div>
+      <div>Calculating eco-friendly routes...</div>
+    </div>
+    <div class="routes-list" id="routesList">
+      <div class="empty-state">
+        <div class="empty-icon">🗺️</div>
+        <div class="empty-text">Enter your destination above to see eco-scored routes with CO₂ estimates</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map controls -->
+  <div class="map-controls">
+    <div class="map-btn" onclick="centerOnUser()" title="My Location">📍</div>
+    <div class="map-btn" onclick="toggleTraffic()" title="Toggle Traffic" id="trafficBtn">🚦</div>
+    <div class="map-btn" id="zoomIn">＋</div>
+    <div class="map-btn" id="zoomOut">－</div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-title">Eco Route Colors</div>
+    <div class="legend-item"><div class="legend-line" style="background:#00c853"></div> Least CO₂</div>
+    <div class="legend-item"><div class="legend-line" style="background:#ff9100"></div> Moderate CO₂</div>
+    <div class="legend-item"><div class="legend-line" style="background:#ff3d3d"></div> High CO₂</div>
+  </div>
+
+  <!-- Eco tip -->
+  <div class="eco-tip" id="ecoTip">
+    🌱 <strong>Eco Tip:</strong> <span id="ecoTipText">EcoRoute picks routes that minimize your carbon footprint based on distance, traffic & your vehicle type.</span>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================================================
+// CONFIG — paste your Google Maps API key below
+// ===================================================
+const GOOGLE_MAPS_API_KEY = 'AIzaSyA9LSRfwJw6J4Lx69ZCD9ersMiCR8HEHeA';
+
+// ===================================================
+// APP STATE
+// ===================================================
+let appState = {
+  user: null,
+  vehicle: { type: '4wheeler', fuel: 'petrol' },
+  userLocation: null,
+  map: null,
+  directionsService: null,
+  directionsRenderers: [],
+  trafficLayer: null,
+  trafficVisible: true,
+  routes: [],
+  selectedVehicle: '4wheeler',
+  autocomplete: null,
+};
+
+// CO2 emission factors (g/km)
+const CO2_FACTORS = {
+  petrol: { '2wheeler': 80, '4wheeler': 180, 'bus': 220, 'ev': 0 },
+  diesel: { '2wheeler': 75, '4wheeler': 165, 'bus': 200, 'ev': 0 },
+  electric: { '2wheeler': 10, '4wheeler': 25, 'bus': 40, 'ev': 20 },
+  hybrid: { '2wheeler': 50, '4wheeler': 110, 'bus': 140, 'ev': 20 },
+  cng: { '2wheeler': 60, '4wheeler': 140, 'bus': 170, 'ev': 0 },
+};
+
+const ECO_TIPS = [
+  "EcoRoute picks routes that minimize your carbon footprint.",
+  "🌿 Electric vehicles saved 48% CO₂ vs petrol on average today.",
+  "🚦 Stop-and-go traffic increases emissions by up to 40%.",
+  "🌳 Choosing the green route for a year can offset 200kg CO₂.",
+  "⚡ Smooth driving at steady speed maximizes fuel efficiency.",
+];
+
+// ===================================================
+// LOGIN / REGISTER
+// ===================================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', (i===0 && tab==='login')||(i===1 && tab==='register')));
+  document.getElementById('loginTab').classList.toggle('active', tab==='login');
+  document.getElementById('registerTab').classList.toggle('active', tab==='register');
+}
+
+function selectVehicle(type) {
+  appState.selectedVehicle = type;
+  document.querySelectorAll('.vehicle-card').forEach(c => c.classList.remove('selected'));
+  const ids = { '2wheeler':'v2w', '4wheeler':'v4w', 'ev':'vev', 'bus':'vbus' };
+  document.getElementById(ids[type])?.classList.add('selected');
+  // Auto-set fuel for EV
+  if (type === 'ev') document.getElementById('fuelType').value = 'electric';
+}
+
+function doLogin() {
+  appState.user = {
+    name: 'EcoRider',
+    avatar: 'E',
+    vehicle: { type: '4wheeler', fuel: 'petrol' }
+  };
+  showMapScreen();
+}
+
+function doRegister() {
+  const first = document.getElementById('regFirst').value || 'User';
+  const last = document.getElementById('regLast').value || '';
+  const fuel = document.getElementById('fuelType').value;
+  appState.user = {
+    name: `${first} ${last}`.trim(),
+    avatar: first[0].toUpperCase(),
+    vehicle: { type: appState.selectedVehicle, fuel }
+  };
+  showMapScreen();
+}
+
+function showMapScreen() {
+  document.getElementById('loginScreen').classList.remove('active');
+  document.getElementById('mapScreen').classList.add('active');
+  updateUserUI();
+  loadGoogleMaps();
+  rotateTips();
+}
+
+function updateUserUI() {
+  const u = appState.user;
+  document.getElementById('userAvatar').textContent = u.avatar;
+  document.getElementById('userName').textContent = u.name.split(' ')[0];
+  const labels = { '2wheeler':'Motorbike','4wheeler':'Car','ev':'EV','bus':'Bus/Van' };
+  const fuels = { petrol:'Petrol',diesel:'Diesel',electric:'Electric',hybrid:'Hybrid',cng:'CNG' };
+  const icons = { '2wheeler':'🏍️','4wheeler':'🚗','ev':'⚡','bus':'🚌' };
+  document.getElementById('vehicleInfo').textContent = `${fuels[u.vehicle.fuel]} ${labels[u.vehicle.type]}`;
+  document.getElementById('vehicleBadge').querySelector('span').textContent = icons[u.vehicle.type] || '🚗';
+}
+
+// ===================================================
+// GOOGLE MAPS LOADING
+// ===================================================
+function loadGoogleMaps() {
+  if (document.getElementById('gmap-script')) { initMap(); return; }
+  const script = document.createElement('script');
+  script.id = 'gmap-script';
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&callback=initMap`;
+  script.async = true;
+  script.defer = true;
+  script.onerror = () => initMapDemo();
+  document.head.appendChild(script);
+}
+
+// ===================================================
+// MAP INIT (real Google Maps)
+// ===================================================
+window.initMap = function() {
+  const mapEl = document.getElementById('map');
+  appState.map = new google.maps.Map(mapEl, {
+    center: { lat: 12.9716, lng: 77.5946 }, // Bengaluru default
+    zoom: 14,
+    styles: getDarkMapStyles(),
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
+    zoomControl: false,
+  });
+
+  appState.directionsService = new google.maps.DirectionsService();
+  appState.trafficLayer = new google.maps.TrafficLayer();
+  appState.trafficLayer.setMap(appState.map);
+
+  // Zoom controls
+  document.getElementById('zoomIn').onclick = () => appState.map.setZoom(appState.map.getZoom() + 1);
+  document.getElementById('zoomOut').onclick = () => appState.map.setZoom(appState.map.getZoom() - 1);
+
+  // Autocomplete
+  const destInput = document.getElementById('destinationInput');
+  appState.autocomplete = new google.maps.places.Autocomplete(destInput, { types: ['geocode'] });
+  destInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchDestination(); });
+
+  getUserLocation();
+};
+
+function getUserLocation() {
+  if (!navigator.geolocation) {
+    document.getElementById('originText').textContent = 'Geolocation not supported';
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    appState.userLocation = { lat, lng };
+    appState.map.setCenter({ lat, lng });
+
+    // Reverse geocode
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        document.getElementById('originText').textContent = results[0].formatted_address;
+      } else {
+        document.getElementById('originText').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      }
+    });
+
+    // Current location marker
+    new google.maps.Marker({
+      position: { lat, lng },
+      map: appState.map,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 10,
+        fillColor: '#00c853',
+        fillOpacity: 1,
+        strokeColor: '#fff',
+        strokeWeight: 2,
+      },
+      title: 'You are here',
+    });
+
+    showToast('📍 Location detected!');
+  }, () => {
+    document.getElementById('originText').textContent = 'Location access denied';
+    showToast('⚠️ Enable location for better results');
+  });
+}
+
+function centerOnUser() {
+  if (appState.userLocation && appState.map) {
+    appState.map.panTo(appState.userLocation);
+    appState.map.setZoom(15);
+  } else { getUserLocation(); }
+}
+
+function toggleTraffic() {
+  if (!appState.trafficLayer) return;
+  appState.trafficVisible = !appState.trafficVisible;
+  appState.trafficLayer.setMap(appState.trafficVisible ? appState.map : null);
+  document.getElementById('trafficBtn').style.opacity = appState.trafficVisible ? '1' : '0.5';
+  showToast(appState.trafficVisible ? '🚦 Traffic layer ON' : '🚦 Traffic layer OFF');
+}
+
+// ===================================================
+// ROUTE SEARCH
+// ===================================================
+function searchDestination() {
+  const dest = document.getElementById('destinationInput').value.trim();
+  if (!dest) { showToast('⚠️ Enter a destination first'); return; }
+  if (!appState.userLocation) { showToast('⚠️ Location not detected yet'); return; }
+
+  showLoadingRoutes();
+  clearRenderers();
+
+  const origin = appState.userLocation;
+  const service = appState.directionsService;
+
+  const provideAlternatives = true;
+  const request = {
+    origin: new google.maps.LatLng(origin.lat, origin.lng),
+    destination: dest,
+    travelMode: google.maps.TravelMode.DRIVING,
+    provideRouteAlternatives: provideAlternatives,
+    drivingOptions: {
+      departureTime: new Date(),
+      trafficModel: google.maps.TrafficModel.BEST_GUESS,
+    },
+  };
+
+  service.route(request, (result, status) => {
+    if (status === 'OK') {
+      processRoutes(result.routes, dest);
+    } else {
+      showToast('❌ Could not find routes: ' + status);
+      hideLoadingRoutes();
+    }
+  });
+}
+
+function processRoutes(routes, dest) {
+  const fuel = appState.user.vehicle.fuel;
+  const vtype = appState.user.vehicle.type;
+  const emFactor = (CO2_FACTORS[fuel] || CO2_FACTORS.petrol)[vtype] || 180;
+
+  // Compute eco data for each route
+  const processed = routes.map((route, idx) => {
+    const leg = route.legs[0];
+    const distM = leg.distance.value; // meters
+    const distKm = distM / 1000;
+    const durationMin = Math.round(leg.duration.value / 60);
+    const durationTrafficMin = leg.duration_in_traffic ? Math.round(leg.duration_in_traffic.value / 60) : durationMin;
+
+    // Traffic factor: more traffic = more stop-start = higher emissions
+    const trafficRatio = durationTrafficMin / durationMin;
+    const trafficMultiplier = 1 + Math.max(0, (trafficRatio - 1) * 0.6);
+
+    // CO2 estimation
+    const co2g = Math.round(distKm * emFactor * trafficMultiplier);
+    const co2kg = (co2g / 1000).toFixed(2);
+
+    // Traffic level
+    let trafficLevel = 'Low';
+    if (trafficRatio > 1.4) trafficLevel = 'Heavy';
+    else if (trafficRatio > 1.15) trafficLevel = 'Moderate';
+
+    return {
+      route,
+      index: idx,
+      distKm: distKm.toFixed(1),
+      durationMin: durationTrafficMin,
+      co2g,
+      co2kg,
+      co2raw: co2g,
+      trafficLevel,
+      trafficRatio,
+      summary: route.summary,
+      dest,
+    };
+  });
+
+  // Sort by CO2
+  processed.sort((a, b) => a.co2raw - b.co2raw);
+  appState.routes = processed;
+
+  renderRouteCards(processed);
+  renderRoutesOnMap(processed);
+  updateEcoScore(processed);
+  hideLoadingRoutes();
+}
+
+// ===================================================
+// ROUTE RENDERING ON MAP
+// ===================================================
+const ROUTE_COLORS = ['#00c853', '#ff9100', '#ff3d3d', '#ff7043'];
+const ROUTE_CLASSES = ['green', 'orange', 'red', 'red'];
+
+function renderRoutesOnMap(routes) {
+  clearRenderers();
+  routes.forEach((r, i) => {
+    const color = ROUTE_COLORS[i] || '#888';
+    const renderer = new google.maps.DirectionsRenderer({
+      map: appState.map,
+      directions: { routes: [r.route], request: {}, status: 'OK' },
+      routeIndex: 0,
+      suppressMarkers: i > 0,
+      polylineOptions: {
+        strokeColor: color,
+        strokeWeight: i === 0 ? 7 : 5,
+        strokeOpacity: i === 0 ? 0.9 : 0.6,
+      },
+    });
+
+    // Workaround: use DirectionsRenderer with full result
+    renderer.setDirections({ routes: [r.route], geocoded_waypoints: [], request: {} });
+    appState.directionsRenderers.push(renderer);
+  });
+
+  // Fit bounds
+  const bounds = new google.maps.LatLngBounds();
+  routes.forEach(r => {
+    r.route.overview_path.forEach(p => bounds.extend(p));
+  });
+  appState.map.fitBounds(bounds, { left: 400 });
+}
+
+function clearRenderers() {
+  appState.directionsRenderers.forEach(r => r.setMap(null));
+  appState.directionsRenderers = [];
+}
+
+function highlightRoute(index) {
+  appState.directionsRenderers.forEach((r, i) => {
+    r.setOptions({
+      polylineOptions: {
+        strokeColor: ROUTE_COLORS[i] || '#888',
+        strokeWeight: i === index ? 8 : 4,
+        strokeOpacity: i === index ? 1 : 0.4,
+        zIndex: i === index ? 10 : 1,
+      }
+    });
+  });
+}
+
+// ===================================================
+// ROUTE CARDS
+// ===================================================
+const LABELS = ['🏆 Best Eco Route', '⚡ Second Option', '🚗 Alternative', '📍 Route 4'];
+
+function renderRouteCards(routes) {
+  const list = document.getElementById('routesList');
+  const maxCo2 = Math.max(...routes.map(r => r.co2raw));
+
+  list.innerHTML = routes.map((r, i) => {
+    const cls = ROUTE_CLASSES[i] || 'red';
+    const pct = Math.round((r.co2raw / maxCo2) * 100);
+    const impact = getImpact(r, i);
+    const ecoGrade = i === 0 ? 'A+' : i === 1 ? 'B' : 'C';
+    const ecoLabel = i === 0 ? 'Best Eco' : i === 1 ? 'Moderate' : 'High CO₂';
+
+    return `
+    <div class="route-card ${cls}" id="rcard${i}" onclick="selectRoute(${i})">
+      <div class="route-card-top">
+        <div class="route-label">${LABELS[i] || `Route ${i+1}`}</div>
+        <div class="eco-badge ${cls}">${getLeafIcon(i)} ${ecoLabel}</div>
+      </div>
+      <div class="route-meta">
+        <div class="meta-item">
+          <div class="meta-val">${r.distKm} km</div>
+          <div class="meta-label">Distance</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-val">${formatDuration(r.durationMin)}</div>
+          <div class="meta-label">Duration</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-val">${r.co2kg} kg</div>
+          <div class="meta-label">CO₂</div>
+        </div>
+      </div>
+      <div class="co2-bar-wrap">
+        <div class="co2-bar-label">
+          <span>CO₂ emission</span>
+          <span>${r.trafficLevel} traffic</span>
+        </div>
+        <div class="co2-bar-track">
+          <div class="co2-bar-fill ${cls}" id="bar${i}" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="route-impact" id="impact${i}">
+        ${impact}
+        <a class="nav-btn" href="${getGoogleMapsUrl(r)}" target="_blank">
+          🧭 Navigate with Google Maps
+        </a>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Animate bars
+  setTimeout(() => {
+    routes.forEach((r, i) => {
+      const pct = Math.round((r.co2raw / maxCo2) * 100);
+      const el = document.getElementById(`bar${i}`);
+      if (el) el.style.width = pct + '%';
+    });
+  }, 100);
+
+  document.getElementById('routesHeader').style.display = 'flex';
+  document.getElementById('routesCountBadge').textContent = `${routes.length} found`;
+
+  // Auto-select best
+  selectRoute(0);
+}
+
+function selectRoute(index) {
+  document.querySelectorAll('.route-card').forEach((c, i) => {
+    c.classList.toggle('active', i === index);
+  });
+  highlightRoute(index);
+
+  // Scroll card into view
+  const card = document.getElementById(`rcard${index}`);
+  if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function getLeafIcon(i) {
+  return i === 0 ? '🌿' : i === 1 ? '🍂' : '🌫️';
+}
+
+function formatDuration(mins) {
+  if (mins < 60) return `${mins}m`;
+  return `${Math.floor(mins/60)}h ${mins%60}m`;
+}
+
+function getImpact(route, rank) {
+  const co2 = parseFloat(route.co2kg);
+  const trees = Math.round(co2 * 4.5);
+  const savings = rank > 0 && appState.routes[0] ?
+    (parseFloat(route.co2kg) - parseFloat(appState.routes[0].co2kg)).toFixed(2) : 0;
+
+  const msgs = {
+    0: `<span class="impact-icon">🌳</span> <strong>Eco Champion!</strong> This route emits only <strong>${co2} kg CO₂</strong>. That's like planting <strong>${trees} trees</strong> worth of benefit compared to the worst route. Drive guilt-free!`,
+    1: `<span class="impact-icon">⚡</span> <strong>Eco Rating: B.</strong> This route emits <strong>${co2} kg CO₂</strong> — <strong>${savings} kg more</strong> than the best route. ${rank === 1 ? 'A reasonable choice if time is a priority.' : ''}`,
+    2: `<span class="impact-icon">🌫️</span> <strong>High Emissions Warning!</strong> This route emits <strong>${co2} kg CO₂</strong> — <strong>${savings} kg more</strong> than the greenest option. Heavy traffic ahead causes significantly higher fuel burn.`,
+  };
+
+  const traffic = route.trafficLevel;
+  const extra = `<br><br><span style="color:var(--text-muted);font-size:11px">📊 Traffic: ${traffic} · Eco Grade: ${rank === 0 ? 'A+' : rank === 1 ? 'B' : 'C'} · Via ${route.summary}</span>`;
+
+  return (msgs[rank] || msgs[2]) + extra;
+}
+
+function getGoogleMapsUrl(route) {
+  const dest = encodeURIComponent(document.getElementById('destinationInput').value);
+  const origin = appState.userLocation;
+  if (origin) {
+    return `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${dest}&travelmode=driving`;
+  }
+  return `https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`;
+}
+
+function updateEcoScore(routes) {
+  const best = routes[0];
+  document.getElementById('ecoScoreBar').style.display = 'flex';
+  document.getElementById('bestCo2').textContent = `${best.co2kg} kg CO₂`;
+  const trees = Math.round(parseFloat(best.co2kg) * 4.5);
+  document.getElementById('bestImpact').textContent = `≈ ${trees} trees worth of benefit`;
+}
+
+// ===================================================
+// DEMO MODE (no API key)
+// ===================================================
+function initMapDemo() {
+  showToast('⚠️ Add Google Maps API key for live maps');
+  const mapEl = document.getElementById('map');
+  mapEl.style.background = 'linear-gradient(135deg, #0a1a0a 0%, #0f2a1a 50%, #0a1a0a 100%)';
+  mapEl.innerHTML = `
+    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(0,200,83,0.4);font-family:'Syne',sans-serif;font-size:18px;font-weight:700;text-align:center;padding:20px;pointer-events:none;">
+      🗺️<br><br>Add your Google Maps API key<br>to enable live maps & routing
+    </div>
+    <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.04" xmlns="http://www.w3.org/2000/svg">
+      <defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00c853" stroke-width="1"/></pattern></defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+    </svg>`;
+
+  document.getElementById('originText').textContent = 'Demo Mode — Bengaluru, India';
+
+  document.getElementById('destinationInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') demoSearch();
+  });
+  document.querySelector('.loc-btn').onclick = demoSearch;
+  document.getElementById('zoomIn').onclick = () => showToast('Add API key for map zoom');
+  document.getElementById('zoomOut').onclick = () => showToast('Add API key for map zoom');
+}
+
+function demoSearch() {
+  const dest = document.getElementById('destinationInput').value.trim();
+  if (!dest) { showToast('Enter a destination'); return; }
+  showLoadingRoutes();
+  setTimeout(() => {
+    const demoRoutes = generateDemoRoutes(dest);
+    renderRouteCards(demoRoutes);
+    updateEcoScore(demoRoutes);
+    hideLoadingRoutes();
+  }, 1800);
+}
+
+function generateDemoRoutes(dest) {
+  const fuel = appState.user?.vehicle?.fuel || 'petrol';
+  const vtype = appState.user?.vehicle?.type || '4wheeler';
+  const ef = (CO2_FACTORS[fuel] || CO2_FACTORS.petrol)[vtype] || 180;
+
+  return [
+    { index:0, distKm:'11.2', durationMin:22, co2g:Math.round(11.2*ef*1.0), co2kg:(11.2*ef*1.0/1000).toFixed(2), co2raw:Math.round(11.2*ef*1.0), trafficLevel:'Low', trafficRatio:1.05, summary:'Outer Ring Road', dest },
+    { index:1, distKm:'9.8', durationMin:35, co2g:Math.round(9.8*ef*1.5), co2kg:(9.8*ef*1.5/1000).toFixed(2), co2raw:Math.round(9.8*ef*1.5), trafficLevel:'Moderate', trafficRatio:1.35, summary:'MG Road', dest },
+    { index:2, distKm:'8.4', durationMin:48, co2g:Math.round(8.4*ef*1.9), co2kg:(8.4*ef*1.9/1000).toFixed(2), co2raw:Math.round(8.4*ef*1.9), trafficLevel:'Heavy', trafficRatio:1.85, summary:'Brigade Road', dest },
+  ].sort((a,b) => a.co2raw - b.co2raw);
+}
+
+// ===================================================
+// UI HELPERS
+// ===================================================
+function showLoadingRoutes() {
+  document.getElementById('loadingRoutes').style.display = 'flex';
+  document.getElementById('routesList').innerHTML = '';
+  document.getElementById('routesHeader').style.display = 'none';
+}
+function hideLoadingRoutes() {
+  document.getElementById('loadingRoutes').style.display = 'none';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+let tipIdx = 0;
+function rotateTips() {
+  setInterval(() => {
+    tipIdx = (tipIdx + 1) % ECO_TIPS.length;
+    document.getElementById('ecoTipText').textContent = ECO_TIPS[tipIdx];
+  }, 6000);
+}
+
+// ===================================================
+// DARK MAP STYLES
+// ===================================================
+function getDarkMapStyles() {
+  return [
+    {elementType:'geometry',stylers:[{color:'#0a1a0a'}]},
+    {elementType:'labels.text.stroke',stylers:[{color:'#0a1a0a'}]},
+    {elementType:'labels.text.fill',stylers:[{color:'#4a7a4a'}]},
+    {featureType:'road',elementType:'geometry',stylers:[{color:'#1a3a1a'}]},
+    {featureType:'road.arterial',elementType:'geometry',stylers:[{color:'#1f4a1f'}]},
+    {featureType:'road.highway',elementType:'geometry',stylers:[{color:'#2a6a2a'}]},
+    {featureType:'road.highway',elementType:'geometry.stroke',stylers:[{color:'#1a3a1a'}]},
+    {featureType:'water',elementType:'geometry',stylers:[{color:'#051505'}]},
+    {featureType:'poi',elementType:'geometry',stylers:[{color:'#0f2a0f'}]},
+    {featureType:'transit',elementType:'geometry',stylers:[{color:'#0f200f'}]},
+    {featureType:'administrative',elementType:'geometry.stroke',stylers:[{color:'#1a4a1a'}]},
+    {featureType:'landscape',elementType:'geometry',stylers:[{color:'#0a1a0a'}]},
+    {featureType:'poi.park',elementType:'geometry',stylers:[{color:'#0a2a0a'}]},
+  ];
+}
+
+// ===================================================
+// INIT
+// ===================================================
+window.centerOnUser = centerOnUser;
+window.toggleTraffic = toggleTraffic;
+</script>
+
+<!-- Google Maps loaded dynamically -->
+</body>
+</html>
