@@ -38,7 +38,7 @@ EcoRoute is a web-based application that helps users choose routes based on carb
 
 ##  Tech Stack
 
-- HTML, CSS, JavaScript  
+- HTML, CSS, JavaScript  , Python
 - Google Maps API  
 
 ---
